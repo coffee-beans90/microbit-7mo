@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Micro:bit v2 - Tu primer superpoder digital | Ciencias de la Computación</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        mono: ['Space Mono', 'monospace'],
+                    },
+                    colors: {
+                        microbit: {
+                            purple: '#6c5ce7',
+                            dark: '#0f172a',
+                            teal: '#00cec9',
+                            pink: '#fd79a8',
+                            gold: '#fdcb6e',
+                            green: '#00b894',
+                            ceibal: '#0284c7'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .slide {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.35s ease-in-out, transform 0.35s ease-in-out;
+            transform: translateY(12px);
+        }
+        .slide.active {
+            display: flex;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .pin-hotspot {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        .pin-hotspot:hover {
+            transform: scale(1.18);
+            filter: drop-shadow(0 0 10px rgba(0, 206, 201, 0.8));
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6c5ce7;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans h-full flex flex-col justify-between overflow-x-hidden select-none">
+
+    <!-- Header Navigation -->
+    <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 px-4 md:px-6 py-3 flex justify-between items-center z-40 sticky top-0">
+        <div class="flex items-center space-x-3">
+            <button onclick="toggleIndexMenu()" class="p-2 bg-slate-800 hover:bg-slate-700 text-microbit-teal rounded-lg transition border border-slate-700 flex items-center space-x-2 text-sm" title="Índice de Diapositivas">
+                <i class="fa-solid fa-list-ul text-base"></i>
+                <span class="hidden sm:inline font-medium">Índice</span>
+            </button>
+            <div class="h-6 w-px bg-slate-800 hidden sm:block"></div>
+            <div class="flex items-center space-x-2">
+                <div class="bg-gradient-to-tr from-microbit-purple to-microbit-teal p-1.5 rounded-lg shadow-md shadow-indigo-500/20">
+                    <i class="fa-solid font-mono text-sm font-bold text-white">micro:bit</i>
+                </div>
+                <div>
+                    <h1 class="text-sm md:text-base font-bold bg-gradient-to-r from-white via-slate-200 to-microbit-teal bg-clip-text text-transparent leading-tight">
+                        Micro:bit v2: Tu primer superpoder digital
+                    </h1>
+                    <p class="text-[10px] md:text-xs text-slate-400">7mo Año EBI • Ciencias de la Computación (Plan Ceibal)</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <span id="slide-indicator" class="text-xs md:text-sm font-mono bg-slate-800/80 border border-slate-700 px-3 py-1 rounded-full text-microbit-teal font-semibold">
+                Diapositiva <span id="current-slide">1</span> / <span id="total-slides">8</span>
+            </span>
+            <button onclick="toggleFullScreen()" class="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition" title="Pantalla completa">
+                <i class="fa-solid fa-expand"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Slide Index Modal / Drawer -->
+    <div id="index-menu" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden transition-opacity flex justify-start">
+        <div class="bg-slate-900 border-r border-slate-800 w-80 max-w-[85vw] h-full p-6 flex flex-col justify-between shadow-2xl">
+            <div>
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-bold text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-compass text-microbit-teal"></i>
+                        <span>Índice de la Lección</span>
+                    </h2>
+                    <button onclick="toggleIndexMenu()" class="text-slate-400 hover:text-white p-1 rounded-lg">
+                        <i class="fa-solid fa-xmark text-xl"></i>
+                    </button>
+                </div>
+                <nav class="space-y-2" id="index-list">
+                    <!-- Dynamic index links filled via JS -->
+                </nav>
+            </div>
+            <div class="pt-4 border-t border-slate-800 text-xs text-slate-400 text-center">
+                <p>Navega con flechas del teclado <span class="bg-slate-800 px-1.5 py-0.5 rounded text-slate-300 font-mono">←</span> <span class="bg-slate-800 px-1.5 py-0.5 rounded text-slate-300 font-mono">→</span></p>
+            </div>
+        </div>
+        <div class="flex-1" onclick="toggleIndexMenu()"></div>
+    </div>
+
+    <!-- Main Presentation Container -->
+    <main class="flex-1 flex items-center justify-center p-4 md:p-8 max-w-7xl mx-auto w-full">
+        
+        <!-- Slide 1: Portada -->
+        <section class="slide active flex-col justify-center items-center text-center space-y-6 my-auto w-full">
+            <div class="inline-flex items-center space-x-2 bg-microbit-ceibal/10 border border-microbit-ceibal/30 text-microbit-ceibal px-4 py-1.5 rounded-full text-xs md:text-sm font-medium">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>Plan Ceibal • DGES Educación Secundaria</span>
+            </div>
+            
+            <h1 class="text-3xl md:text-6xl font-extrabold tracking-tight max-w-4xl leading-tight">
+                Micro:bit v2: <span class="bg-gradient-to-r from-microbit-teal via-microbit-purple to-microbit-pink bg-clip-text text-transparent">Tu primer superpoder digital</span>
+            </h1>
+            
+            <p class="text-base md:text-xl text-slate-300 max-w-2xl leading-relaxed">
+                Aprende a programar el mundo físico con tu tarjeta electrónica interactiva. Del código en bloques a la realidad en un solo clic.
+            </p>
+
+            <div class="pt-4 flex flex-wrap gap-4 justify-center">
+                <button onclick="goToSlide(2)" class="bg-gradient-to-r from-microbit-purple to-indigo-600 hover:from-indigo-600 hover:to-microbit-purple text-white font-semibold px-8 py-4 rounded-xl shadow-lg shadow-indigo-500/30 transition transform hover:-translate-y-1 flex items-center space-x-3 text-lg">
+                    <span>Comenzar Lección</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <!-- Quick info badges -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 pt-8 w-full max-w-3xl">
+                <div class="bg-slate-900/80 border border-slate-800 p-3 md:p-4 rounded-xl text-left">
+                    <i class="fa-solid fa-microchip text-microbit-teal text-xl mb-1"></i>
+                    <h3 class="text-xs md:text-sm font-bold text-slate-200">Hardware</h3>
+                    <p class="text-[11px] text-slate-400">Placa Versión 2.0</p>
+                </div>
+                <div class="bg-slate-900/80 border border-slate-800 p-3 md:p-4 rounded-xl text-left">
+                    <i class="fa-solid fa-cubes text-microbit-pink text-xl mb-1"></i>
+                    <h3 class="text-xs md:text-sm font-bold text-slate-200">Programación</h3>
+                    <p class="text-[11px] text-slate-400">Bloques y Python</p>
+                </div>
+                <div class="bg-slate-900/80 border border-slate-800 p-3 md:p-4 rounded-xl text-left">
+                    <i class="fa-solid fa-wifi text-microbit-gold text-xl mb-1"></i>
+                    <h3 class="text-xs md:text-sm font-bold text-slate-200">Conectividad</h3>
+                    <p class="text-[11px] text-slate-400">Radio y Bluetooth</p>
+                </div>
+                <div class="bg-slate-900/80 border border-slate-800 p-3 md:p-4 rounded-xl text-left">
+                    <i class="fa-solid fa-sliders text-microbit-green text-xl mb-1"></i>
+                    <h3 class="text-xs md:text-sm font-bold text-slate-200">Sensores</h3>
+                    <p class="text-[11px] text-slate-400">Luz, Temp, Sonido</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 2: ¿Qué es una Micro:bit? -->
+        <section class="slide flex-col justify-center space-y-6 w-full">
+            <div class="border-l-4 border-microbit-teal pl-4">
+                <span class="text-xs font-mono text-microbit-teal uppercase tracking-wider">Conceptos Básicos</span>
+                <h2 class="text-2xl md:text-3xl font-bold text-white">¿Qué es una Micro:bit?</h2>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6 pt-2">
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl hover:border-microbit-purple/50 transition">
+                    <div class="w-12 h-12 bg-microbit-purple/20 text-microbit-purple rounded-xl flex items-center justify-center text-2xl mb-4">
+                        <i class="fa-solid fa-laptop-code"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Un mini-ordenador</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Es una pequeña tarjeta electrónica de bolsillo diseñada para que aprendas a programar interactuando directamente con el mundo real.
+                    </p>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl hover:border-microbit-teal/50 transition">
+                    <div class="w-12 h-12 bg-microbit-teal/20 text-microbit-teal rounded-xl flex items-center justify-center text-2xl mb-4">
+                        <i class="fa-solid fa-brain"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">El "Cerebro" interactivo</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        Procesa información: toma decisiones, lee sensores de su entorno y controla luces, sonidos o motores en tiempo real.
+                    </p>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl hover:border-microbit-ceibal/50 transition">
+                    <div class="w-12 h-12 bg-microbit-ceibal/20 text-microbit-ceibal rounded-xl flex items-center justify-center text-2xl mb-4">
+                        <i class="fa-solid fa-flag"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Plan Ceibal en Uruguay</h3>
+                    <p class="text-slate-400 text-sm leading-relaxed">
+                        En nuestro país, Plan Ceibal distribuye estas placas en la Educación Media para potenciar tu creatividad y pensamiento computable.
+                    </p>
+                </div>
+            </div>
+
+            <div class="bg-indigo-950/40 border border-indigo-800/50 p-4 rounded-xl flex items-start space-x-4">
+                <i class="fa-solid fa-lightbulb text-microbit-gold text-2xl mt-0.5"></i>
+                <p class="text-xs md:text-sm text-indigo-200">
+                    <strong>¿Sabías que...?</strong> Aunque mide solo 4x5 cm (más pequeña que una tarjeta de crédito), ¡tiene mayor velocidad y memoria que la computadora de la nave Apolo 11 que llegó a la Luna!
+                </p>
+            </div>
+        </section>
+
+        <!-- Slide 3: Características Principales -->
+        <section class="slide flex-col justify-center space-y-6 w-full">
+            <div class="border-l-4 border-microbit-purple pl-4">
+                <span class="text-xs font-mono text-microbit-purple uppercase tracking-wider">Potencial del Hardware</span>
+                <h2 class="text-2xl md:text-3xl font-bold text-white">Características Principales</h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="space-y-4">
+                    <div class="bg-slate-900 p-4 md:p-5 rounded-2xl border border-slate-800 flex space-x-4 items-center">
+                        <div class="p-3 bg-blue-500/10 text-blue-400 rounded-xl">
+                            <i class="fa-solid fa-battery-full text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-sm md:text-base">Portátil e Independiente</h3>
+                            <p class="text-xs text-slate-400">Se conecta por USB a la computadora o funciona de forma autónoma usando un portapilas (2xAAA).</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 p-4 md:p-5 rounded-2xl border border-slate-800 flex space-x-4 items-center">
+                        <div class="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl">
+                            <i class="fa-solid fa-cubes-stacked text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-sm md:text-base">Programación Intuitiva</h3>
+                            <p class="text-xs text-slate-400">Programamos encajando bloques de colores en MakeCode y podemos ver el código escrito en Python.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 p-4 md:p-5 rounded-2xl border border-slate-800 flex space-x-4 items-center">
+                        <div class="p-3 bg-amber-500/10 text-amber-400 rounded-xl">
+                            <i class="fa-solid fa-wifi text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white text-sm md:text-base">Comunicación Inalámbrica</h3>
+                            <p class="text-xs text-slate-400">Permite enviar mensajes por Radio entre placas cercanas o conectarse a celulares/tablets por Bluetooth.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-white mb-3 flex items-center space-x-2">
+                            <i class="fa-solid fa-eye text-microbit-teal"></i>
+                            <span>Sensores Integrados</span>
+                        </h3>
+                        <p class="text-xs text-slate-300 mb-4">No necesitas conectar cables ni módulos extra para medir tu entorno:</p>
+
+                        <ul class="space-y-2.5 text-xs text-slate-300">
+                            <li class="flex items-center space-x-3 bg-slate-800/60 p-2.5 rounded-lg">
+                                <i class="fa-solid fa-sun text-amber-400 w-5 text-center text-sm"></i>
+                                <span><strong>Sensor de Luz:</strong> Mide el brillo o la oscuridad del salón.</span>
+                            </li>
+                            <li class="flex items-center space-x-3 bg-slate-800/60 p-2.5 rounded-lg">
+                                <i class="fa-solid fa-temperature-half text-rose-400 w-5 text-center text-sm"></i>
+                                <span><strong>Temperatura:</strong> Mide los grados Celsius del procesador.</span>
+                            </li>
+                            <li class="flex items-center space-x-3 bg-slate-800/60 p-2.5 rounded-lg">
+                                <i class="fa-solid fa-compass text-sky-400 w-5 text-center text-sm"></i>
+                                <span><strong>Brújula y Acelerómetro:</strong> Detecta inclinación, giros y agitación.</span>
+                            </li>
+                            <li class="flex items-center space-x-3 bg-slate-800/60 p-2.5 rounded-lg">
+                                <i class="fa-solid fa-microphone text-emerald-400 w-5 text-center text-sm"></i>
+                                <span><strong>Micrófono (v2):</strong> Mide el nivel de ruido ambiental y aplausos.</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 4: Componentes del Frente (v2.0) -->
+        <section class="slide flex-col justify-center space-y-4 w-full">
+            <div class="border-l-4 border-microbit-gold pl-4">
+                <span class="text-xs font-mono text-microbit-gold uppercase tracking-wider">Anatomía del Hardware</span>
+                <h2 class="text-2xl md:text-3xl font-bold text-white">Componentes: Frente (Versión 2.0)</h2>
+            </div>
+
+            <p class="text-xs text-slate-300">Pasa el cursor o haz clic en las zonas marcadas para explorar los componentes:</p>
+
+            <div class="grid md:grid-cols-12 gap-6 items-center">
+                <!-- Interactive SVG Graphic (Front) -->
+                <div class="md:col-span-6 bg-slate-900 p-4 rounded-2xl border border-slate-800 flex justify-center relative">
+                    <svg viewBox="0 0 300 250" class="w-full max-w-xs h-auto drop-shadow-2xl">
+                        <!-- Micro:bit Board Outline -->
+                        <rect x="10" y="10" width="280" height="230" rx="16" fill="#111827" stroke="#374151" stroke-width="3"/>
+                        
+                        <!-- Edge Connector Pines (Bottom) -->
+                        <rect x="20" y="200" width="260" height="35" fill="#d97706" rx="4"/>
+                        <circle cx="35" cy="217" r="10" fill="#111827" class="pin-hotspot" onclick="showComponent('pin0')"/>
+                        <text x="35" y="220" font-size="9" fill="#f59e0b" font-weight="bold" text-anchor="middle">0</text>
+
+                        <circle cx="95" cy="217" r="10" fill="#111827" class="pin-hotspot" onclick="showComponent('pin1')"/>
+                        <text x="95" y="220" font-size="9" fill="#f59e0b" font-weight="bold" text-anchor="middle">1</text>
+
+                        <circle cx="155" cy="217" r="10" fill="#111827" class="pin-hotspot" onclick="showComponent('pin2')"/>
+                        <text x="155" y="220" font-size="9" fill="#f59e0b" font-weight="bold" text-anchor="middle">2</text>
+
+                        <circle cx="215" cy="217" r="10" fill="#111827" class="pin-hotspot" onclick="showComponent('pin3v')"/>
+                        <text x="215" y="220" font-size="8" fill="#f59e0b" font-weight="bold" text-anchor="middle">3V</text>
+
+                        <circle cx="265" cy="217" r="10" fill="#111827" class="pin-hotspot" onclick="showComponent('pingnd')"/>
+                        <text x="265" y="220" font-size="8" fill="#f59e0b" font-weight="bold" text-anchor="middle">GND</text>
+
+                        <!-- LED Matrix 5x5 -->
+                        <g id="led-matrix" class="pin-hotspot" onclick="showComponent('leds')">
+                            <rect x="110" y="70" width="80" height="80" fill="#1f2937" rx="8"/>
+                            <circle cx="120" cy="80" r="4" fill="#ef4444"/>
+                            <circle cx="135" cy="80" r="4" fill="#374151"/>
+                            <circle cx="150" cy="80" r="4" fill="#374151"/>
+                            <circle cx="165" cy="80" r="4" fill="#374151"/>
+                            <circle cx="180" cy="80" r="4" fill="#ef4444"/>
+                            
+                            <circle cx="120" cy="95" r="4" fill="#ef4444"/>
+                            <circle cx="135" cy="95" r="4" fill="#ef4444"/>
+                            <circle cx="150" cy="95" r="4" fill="#374151"/>
+                            <circle cx="165" cy="95" r="4" fill="#ef4444"/>
+                            <circle cx="180" cy="95" r="4" fill="#ef4444"/>
+
+                            <circle cx="120" cy="110" r="4" fill="#ef4444"/>
+                            <circle cx="135" cy="110" r="4" fill="#ef4444"/>
+                            <circle cx="150" cy="110" r="4" fill="#ef4444"/>
+                            <circle cx="165" cy="110" r="4" fill="#ef4444"/>
+                            <circle cx="180" cy="110" r="4" fill="#ef4444"/>
+
+                            <circle cx="120" cy="125" r="4" fill="#374151"/>
+                            <circle cx="135" cy="125" r="4" fill="#ef4444"/>
+                            <circle cx="150" cy="125" r="4" fill="#ef4444"/>
+                            <circle cx="165" cy="125" r="4" fill="#ef4444"/>
+                            <circle cx="180" cy="125" r="4" fill="#374151"/>
+
+                            <circle cx="120" cy="140" r="4" fill="#374151"/>
+                            <circle cx="135" cy="140" r="4" fill="#374151"/>
+                            <circle cx="150" cy="140" r="4" fill="#ef4444"/>
+                            <circle cx="165" cy="140" r="4" fill="#374151"/>
+                            <circle cx="180" cy="140" r="4" fill="#374151"/>
+                        </g>
+
+                        <!-- Buttons A and B -->
+                        <g class="pin-hotspot" onclick="showComponent('btnA')">
+                            <circle cx="50" cy="110" r="16" fill="#374151"/>
+                            <circle cx="50" cy="110" r="10" fill="#dc2626"/>
+                            <text x="50" y="140" font-size="12" fill="#ffffff" font-weight="bold" text-anchor="middle">A</text>
+                        </g>
+
+                        <g class="pin-hotspot" onclick="showComponent('btnB')">
+                            <circle cx="250" cy="110" r="16" fill="#374151"/>
+                            <circle cx="250" cy="110" r="10" fill="#dc2626"/>
+                            <text x="250" y="140" font-size="12" fill="#ffffff" font-weight="bold" text-anchor="middle">B</text>
+                        </g>
+
+                        <!-- Touch Logo v2 -->
+                        <g class="pin-hotspot" onclick="showComponent('logo')">
+                            <path d="M 130 25 L 170 25 L 160 45 L 140 45 Z" fill="#f59e0b" stroke="#d97706" stroke-width="1"/>
+                            <text x="150" y="38" font-size="9" fill="#111827" font-weight="bold" text-anchor="middle">micro:bit</text>
+                        </g>
+
+                        <!-- Microphone & Indicator LED v2 -->
+                        <g class="pin-hotspot" onclick="showComponent('mic')">
+                            <circle cx="90" cy="35" r="3" fill="#ef4444"/>
+                            <circle cx="100" cy="35" r="2" fill="#9ca3af"/>
+                            <text x="95" y="24" font-size="7" fill="#9ca3af" text-anchor="middle">MIC</text>
+                        </g>
+                    </svg>
+                </div>
+
+                <!-- Info Details Panel -->
+                <div class="md:col-span-6 bg-slate-900 border border-slate-800 p-5 rounded-2xl min-h-[220px] flex flex-col justify-center" id="front-info-panel">
+                    <div class="flex items-center space-x-3 text-microbit-gold mb-2">
+                        <i class="fa-solid fa-hand-pointer text-lg"></i>
+                        <h3 class="font-bold text-base md:text-lg" id="front-comp-title">Haz clic en un componente</h3>
+                    </div>
+                    <p class="text-slate-300 text-xs md:text-sm leading-relaxed" id="front-comp-desc">
+                        Toca los Botones A/B, la Matriz de LEDs, el Logo Táctil dorado, el Micrófono o los Pines de conexión inferiores para ver su función.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 5: Componentes del Dorso (v2.0) -->
+        <section class="slide flex-col justify-center space-y-4 w-full">
+            <div class="border-l-4 border-microbit-pink pl-4">
+                <span class="text-xs font-mono text-microbit-pink uppercase tracking-wider">Anatomía Posterior</span>
+                <h2 class="text-2xl md:text-3xl font-bold text-white">Componentes: Dorso (Versión 2.0)</h2>
+            </div>
+
+            <p class="text-xs text-slate-300">Explora las novedades en la parte trasera de la tarjeta:</p>
+
+            <div class="grid md:grid-cols-12 gap-6 items-center">
+                <!-- Interactive SVG Graphic (Back) -->
+                <div class="md:col-span-6 bg-slate-900 p-4 rounded-2xl border border-slate-800 flex justify-center relative">
+                    <svg viewBox="0 0 300 250" class="w-full max-w-xs h-auto drop-shadow-2xl">
+                        <!-- Board Outline -->
+                        <rect x="10" y="10" width="280" height="230" rx="16" fill="#111827" stroke="#374151" stroke-width="3"/>
+
+                        <!-- USB Connector -->
+                        <g class="pin-hotspot" onclick="showBackComponent('usb')">
+                            <rect x="130" y="10" width="40" height="22" fill="#9ca3af" rx="2"/>
+                            <text x="150" y="25" font-size="7" fill="#111827" font-weight="bold" text-anchor="middle">USB</text>
+                        </g>
+
+                        <!-- Battery Connector -->
+                        <g class="pin-hotspot" onclick="showBackComponent('battery')">
+                            <rect x="200" y="15" width="35" height="25" fill="#f3f4f6" rx="3"/>
+                            <rect x="205" y="20" width="25" height="15" fill="#dc2626"/>
+                            <text x="217" y="31" font-size="7" fill="#ffffff" font-weight="bold" text-anchor="middle">BAT</text>
+                        </g>
+
+                        <!-- Reset / Power Button -->
+                        <g class="pin-hotspot" onclick="showBackComponent('reset')">
+                            <rect x="70" y="15" width="25" height="20" fill="#4b5563" rx="3"/>
+                            <circle cx="82" cy="25" r="5" fill="#000000"/>
+                            <text x="82" y="44" font-size="7" fill="#9ca3af" text-anchor="middle">RESET</text>
+                        </g>
+
+                        <!-- Built-in Speaker (Exclusive v2!) -->
+                        <g class="pin-hotspot" onclick="showBackComponent('speaker')">
+                            <circle cx="150" cy="85" r="22" fill="#374151" stroke="#f59e0b" stroke-width="2"/>
+                            <circle cx="150" cy="85" r="12" fill="#1f2937"/>
+                            <text x="150" y="120" font-size="8" fill="#f59e0b" font-weight="bold" text-anchor="middle">PARLANTE (v2)</text>
+                        </g>
+
+                        <!-- Processor & Antenna -->
+                        <g class="pin-hotspot" onclick="showBackComponent('cpu')">
+                            <rect x="40" y="80" width="50" height="50" fill="#1f2937" stroke="#6b7280" stroke-width="2"/>
+                            <text x="65" y="102" font-size="7" fill="#ffffff" font-weight="bold" text-anchor="middle">CPU &</text>
+                            <text x="65" y="112" font-size="7" fill="#00cec9" font-weight="bold" text-anchor="middle">RADIO</text>
+                        </g>
+
+                        <!-- Motion Sensors (Accelerometer & Compass) -->
+                        <g class="pin-hotspot" onclick="showBackComponent('sensors')">
+                            <rect x="210" y="80" width="45" height="45" fill="#1f2937" stroke="#6b7280" stroke-width="2"/>
+                            <text x="232" y="100" font-size="7" fill="#ffffff" font-weight="bold" text-anchor="middle">ACEL. &</text>
+                            <text x="232" y="110" font-size="7" fill="#fd79a8" font-weight="bold" text-anchor="middle">BRÚJULA</text>
+                        </g>
+
+                        <!-- Edge Connector Lines (Bottom) -->
+                        <rect x="20" y="200" width="260" height="35" fill="#d97706" rx="4"/>
+                    </svg>
+                </div>
+
+                <!-- Info Details Panel -->
+                <div class="md:col-span-6 bg-slate-900 border border-slate-800 p-5 rounded-2xl min-h-[220px] flex flex-col justify-center" id="back-info-panel">
+                    <div class="flex items-center space-x-3 text-microbit-pink mb-2">
+                        <i class="fa-solid fa-hand-pointer text-lg"></i>
+                        <h3 class="font-bold text-base md:text-lg" id="back-comp-title">Haz clic en el dorso</h3>
+                    </div>
+                    <p class="text-slate-300 text-xs md:text-sm leading-relaxed" id="back-comp-desc">
+                        Haz clic en el Altavoz/Parlante, el microprocesador, el puerto USB, el conector de Batería o el Botón Reset.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 6: Entorno de Programación (MakeCode) -->
+        <section class="slide flex-col justify-center space-y-6 w-full">
+            <div class="border-l-4 border-microbit-green pl-4">
+                <span class="text-xs font-mono text-microbit-green uppercase tracking-wider">Entorno de Software</span>
+                <h2 class="text-2xl md:text-3xl font-bold text-white">¿Cómo le damos vida? (MakeCode)</h2>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-6 items-center">
+                <div class="space-y-4">
+                    <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800">
+                        <div class="flex items-center space-x-3 mb-1">
+                            <span class="w-7 h-7 rounded-full bg-microbit-green/20 text-microbit-green flex items-center justify-center font-bold text-xs">1</span>
+                            <h3 class="font-bold text-white text-sm">Plataforma Web MakeCode</h3>
+                        </div>
+                        <p class="text-xs text-slate-400 pl-10">
+                            Ingresamos desde el navegador web a <code class="text-microbit-teal font-mono">makecode.microbit.org</code> sin necesidad de instalar software complejo.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800">
+                        <div class="flex items-center space-x-3 mb-1">
+                            <span class="w-7 h-7 rounded-full bg-microbit-teal/20 text-microbit-teal flex items-center justify-center font-bold text-xs">2</span>
+                            <h3 class="font-bold text-white text-sm">Simulador en Tiempo Real</h3>
+                        </div>
+                        <p class="text-xs text-slate-400 pl-10">
+                            Prueba y depura tus programas en una Micro:bit virtual en pantalla antes de transferir el código a la tarjeta física.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800">
+                        <div class="flex items-center space-x-3 mb-1">
+                            <span class="w-7 h-7 rounded-full bg-microbit-purple/20 text-microbit-purple flex items-center justify-center font-bold text-xs">3</span>
+                            <h3 class="font-bold text-white text-sm">De Bloques a Python</h3>
+                        </div>
+                        <p class="text-xs text-slate-400 pl-10">
+                            Comienzas encajando bloques tipo Scratch y puedes alternar en cualquier momento para ver cómo se escribe en lenguaje Python o JavaScript.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl flex flex-col items-center text-center space-y-4">
+                    <div class="w-14 h-14 bg-microbit-green/20 text-microbit-green rounded-2xl flex items-center justify-center text-2xl">
+                        <i class="fa-solid fa-download"></i>
+                    </div>
+                    <h3 class="text-base font-bold text-white">Carga directa vía USB</h3>
+                    <ol class="text-xs text-slate-300 text-left space-y-2 w-full bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono">
+                        <li>1. Programa tus bloques en MakeCode.</li>
+                        <li>2. Conecta la Micro:bit con el cable USB.</li>
+                        <li>3. Presiona <strong>Descargar</strong> y copia el archivo generado en la unidad de la Micro:bit (¡como si fuera un pendrive!).</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 7: Quiz Interactivo -->
+        <section class="slide flex-col justify-center space-y-6 w-full">
+            <div class="border-l-4 border-microbit-gold pl-4">
+                <span class="text-xs font-mono text-microbit-gold uppercase tracking-wider">Autoevaluación</span>
+                <h2 class="text-2xl md:text-3xl font-bold text-white">Quiz de Repaso Rápido</h2>
+            </div>
+
+            <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-2xl mx-auto w-full space-y-4">
+                <div id="quiz-container">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-mono text-microbit-teal font-semibold" id="quiz-progress-text">Pregunta 1 de 3</span>
+                        <span class="text-xs text-slate-400" id="quiz-score">Puntos: 0</span>
+                    </div>
+
+                    <h3 class="text-base md:text-lg font-bold text-white mb-4" id="quiz-question-text">
+                        ¿Cargando pregunta...?
+                    </h3>
+
+                    <div class="space-y-2.5" id="quiz-options-container">
+                        <!-- Options generated dynamically -->
+                    </div>
+
+                    <div id="quiz-feedback" class="mt-4 p-3 rounded-xl text-xs hidden"></div>
+
+                    <div class="mt-4 flex justify-end">
+                        <button id="quiz-next-btn" onclick="nextQuizQuestion()" class="hidden bg-microbit-purple hover:bg-indigo-600 text-white font-medium px-4 py-2 rounded-lg text-xs transition">
+                            Siguiente Pregunta <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 8: Actividad Práctica e Investigación -->
+        <section class="slide flex-col justify-center space-y-5 w-full">
+            <div class="border-l-4 border-microbit-ceibal pl-4">
+                <span class="text-xs font-mono text-microbit-ceibal uppercase tracking-wider">Desafío Estudiantil</span>
+                <h2 class="text-2xl md:text-3xl font-bold text-white">Actividad Práctica e Investigación</h2>
+                <p class="text-xs md:text-sm text-slate-300 mt-1">
+                    Elabora tu trabajo en <strong>Canva</strong> o <strong>LibreOffice Impress</strong> para entregar en CREA.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4 pt-1">
+                <!-- Card 1 -->
+                <div class="bg-slate-900 border-l-4 border-microbit-teal border-t border-r border-b border-slate-800 p-4 rounded-xl">
+                    <div class="flex items-center space-x-2 text-microbit-teal mb-2">
+                        <i class="fa-solid fa-microchip"></i>
+                        <h3 class="font-bold text-sm text-white">1. Identificación de Hardware</h3>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Incluye un esquema o foto de la Micro:bit v2 y señala al menos 5 componentes principales explicando de forma breve la función de cada uno.
+                    </p>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-slate-900 border-l-4 border-microbit-purple border-t border-r border-b border-slate-800 p-4 rounded-xl">
+                    <div class="flex items-center space-x-2 text-microbit-purple mb-2">
+                        <i class="fa-solid fa-dice text-lg"></i>
+                        <h3 class="font-bold text-sm text-white">2. Análisis de Caso</h3>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Si queremos programar un dado digital que genere un número al agitar la placa, ¿qué sensor detecta el movimiento y qué actuador muestra el resultado?
+                    </p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-slate-900 border-l-4 border-microbit-pink border-t border-r border-b border-slate-800 p-4 rounded-xl">
+                    <div class="flex items-center space-x-2 text-microbit-pink mb-2">
+                        <i class="fa-solid fa-sparkles"></i>
+                        <h3 class="font-bold text-sm text-white">3. Novedades de la Versión 2.0</h3>
+                    </div>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        Menciona dos componentes nuevos de la v2.0 respecto a la v1.5 y describe un proyecto original de tu autoría donde los usarías.
+                    </p>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="bg-slate-900 border-l-4 border-microbit-gold border-t border-r border-b border-slate-800 p-4 rounded-xl">
+                    <div class="flex items-center space-x-2 text-microbit-gold mb-2">
+                        <i class="fa-solid fa-file-arrow-up"></i>
+                        <h3 class="font-bold text-sm text-white">4. Formato y Pautas de Entrega</h3>
+                    </div>
+                    <ul class="text-xs text-slate-300 space-y-1 pl-1">
+                        <li>• <strong>Opciones:</strong> Presentación (3 a 5 diapositivas) o Infografía digital.</li>
+                        <li>• <strong>Software sugerido:</strong> Canva o LibreOffice Impress.</li>
+                        <li>• <strong>Entrega:</strong> Subir el archivo en formato PDF o compartir el enlace público en la tarea asignada en la plataforma <strong>CREA</strong>.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Navigation Controls Footer -->
+    <footer class="bg-slate-900/90 border-t border-slate-800 px-4 md:px-6 py-3 flex justify-between items-center z-40">
+        <button id="prev-btn" onclick="changeSlide(-1)" class="bg-slate-800 hover:bg-slate-700 text-white font-medium px-4 py-2 rounded-xl transition flex items-center space-x-2 text-xs md:text-sm disabled:opacity-40 disabled:cursor-not-allowed">
+            <i class="fa-solid fa-chevron-left"></i>
+            <span>Anterior</span>
+        </button>
+
+        <!-- Slide bullets -->
+        <div class="hidden sm:flex space-x-2" id="bullets-container">
+            <!-- Dynamic bullets -->
+        </div>
+
+        <button id="next-btn" onclick="changeSlide(1)" class="bg-microbit-purple hover:bg-indigo-600 text-white font-medium px-4 py-2 rounded-xl transition flex items-center space-x-2 text-xs md:text-sm">
+            <span>Siguiente</span>
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+    </footer>
+
+    <!-- JavaScript Presentation Controller -->
+    <script>
+        let currentSlideIndex = 1;
+        const totalSlides = 8;
+
+        const slideTitles = [
+            "1. Portada",
+            "2. ¿Qué es Micro:bit?",
+            "3. Características",
+            "4. Frente (v2.0)",
+            "5. Dorso (v2.0)",
+            "6. MakeCode Software",
+            "7. Quiz Repaso",
+            "8. Actividad Práctica"
+        ];
+
+        const frontComponentData = {
+            'leds': {
+                title: 'Matriz de 25 LEDs (5x5)',
+                desc: 'Es la pantalla principal. Puede mostrar letras, números, imágenes o animaciones. ¡También detecta el nivel de luz del ambiente!'
+            },
+            'btnA': {
+                title: 'Botón A',
+                desc: 'Botón físico programable para registrar entradas de usuario (ej. presionar A para contar puntos en un juego).'
+            },
+            'btnB': {
+                title: 'Botón B',
+                desc: 'Segundo botón físico programable para interactuar con tus programas.'
+            },
+            'logo': {
+                title: 'Logo Táctil Dorado (¡Novedad v2!)',
+                desc: 'El logo superior dorado en la v2 funciona como un botón capacitivo sensible al tacto de tu dedo.'
+            },
+            'mic': {
+                title: 'Micrófono e Indicador LED (¡Novedad v2!)',
+                desc: 'Permite medir el sonido ambiente o reaccionar a aplausos. El LED rojo avisa cuando el micrófono está activo.'
+            },
+            'pin0': { title: 'Pin 0 (Entrada/Salida)', desc: 'Conector grande para pinzas cocodrilo. Envía o recibe señales analógicas y digitales.' },
+            'pin1': { title: 'Pin 1 (Entrada/Salida)', desc: 'Conector para sensores externos, luces LED adicionales o servomotores.' },
+            'pin2': { title: 'Pin 2 (Entrada/Salida)', desc: 'Tercer pin principal de expansión para proyectos de robótica.' },
+            'pin3v': { title: 'Pin 3V (Alimentación)', desc: 'Suministra energía (3 Voltios) a componentes externos.' },
+            'pingnd': { title: 'Pin GND (Tierra / Ground)', desc: 'Conexión a masa necesaria para cerrar circuitos eléctricos.' }
+        };
+
+        const backComponentData = {
+            'usb': {
+                title: 'Puerto Micro-USB',
+                desc: 'Permite conectar la tarjeta a la computadora para cargar tus programas y darle energía.'
+            },
+            'battery': {
+                title: 'Conector de Batería JST',
+                desc: 'Enchufe para conectar un portapilas externo (2xAAA) y usar la placa sin estar atado a la computadora.'
+            },
+            'reset': {
+                title: 'Botón Reset y Encendido',
+                desc: 'Reinicia el programa actual. Si lo mantienes presionado en la v2, pone la tarjeta en modo de ahorro de energía.'
+            },
+            'speaker': {
+                title: 'Altavoz / Parlante Integrado (¡Exclusivo v2!)',
+                desc: 'Permite que la Micro:bit emita melodías, tonos y efectos de sonido directamente sin necesitar componentes adicionales.'
+            },
+            'cpu': {
+                title: 'Procesador Principal y Antena',
+                desc: 'El cerebro de la placa. Incluye antena integrada para comunicación por Radio entre placas y Bluetooth.'
+            },
+            'sensors': {
+                title: 'Acelerómetro y Brújula',
+                desc: 'El acelerómetro mide inclinaciones, caídas y sacudidas. La brújula detecta la orientación magnética terrestre.'
+            }
+        };
+
+        function showComponent(key) {
+            const data = frontComponentData[key];
+            if (data) {
+                document.getElementById('front-comp-title').innerText = data.title;
+                document.getElementById('front-comp-desc').innerText = data.desc;
+            }
+        }
+
+        function showBackComponent(key) {
+            const data = backComponentData[key];
+            if (data) {
+                document.getElementById('back-comp-title').innerText = data.title;
+                document.getElementById('back-comp-desc').innerText = data.desc;
+            }
+        }
+
+        function updateSlideUI() {
+            document.querySelectorAll('.slide').forEach((slide, idx) => {
+                if (idx + 1 === currentSlideIndex) {
+                    slide.classList.add('active');
+                } else {
+                    slide.classList.remove('active');
+                }
+            });
+
+            document.getElementById('current-slide').innerText = currentSlideIndex;
+            document.getElementById('prev-btn').disabled = currentSlideIndex === 1;
+            
+            const nextBtn = document.getElementById('next-btn');
+            if (currentSlideIndex === totalSlides) {
+                nextBtn.innerHTML = '<span>Finalizar</span> <i class="fa-solid fa-check ml-1"></i>';
+            } else {
+                nextBtn.innerHTML = '<span>Siguiente</span> <i class="fa-solid fa-chevron-right ml-1"></i>';
+            }
+
+            renderBullets();
+            renderIndexMenu();
+        }
+
+        function renderBullets() {
+            const container = document.getElementById('bullets-container');
+            container.innerHTML = '';
+            for (let i = 1; i <= totalSlides; i++) {
+                const bullet = document.createElement('button');
+                bullet.className = `h-2 rounded-full transition-all ${
+                    i === currentSlideIndex ? 'bg-microbit-teal w-6' : 'bg-slate-700 hover:bg-slate-500 w-2'
+                }`;
+                bullet.onclick = () => goToSlide(i);
+                container.appendChild(bullet);
+            }
+        }
+
+        function renderIndexMenu() {
+            const list = document.getElementById('index-list');
+            list.innerHTML = '';
+            slideTitles.forEach((title, idx) => {
+                const slideNum = idx + 1;
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left px-3 py-2 rounded-xl text-xs font-medium transition flex items-center justify-between ${
+                    slideNum === currentSlideIndex 
+                        ? 'bg-microbit-purple text-white font-bold' 
+                        : 'text-slate-300 hover:bg-slate-800'
+                }`;
+                btn.innerHTML = `<span>${title}</span> ${slideNum === currentSlideIndex ? '<i class="fa-solid fa-chevron-right text-[10px]"></i>' : ''}`;
+                btn.onclick = () => {
+                    goToSlide(slideNum);
+                    toggleIndexMenu();
+                };
+                list.appendChild(btn);
+            });
+        }
+
+        function changeSlide(direction) {
+            if (currentSlideIndex + direction >= 1 && currentSlideIndex + direction <= totalSlides) {
+                currentSlideIndex += direction;
+                updateSlideUI();
+            }
+        }
+
+        function goToSlide(index) {
+            currentSlideIndex = index;
+            updateSlideUI();
+        }
+
+        function toggleIndexMenu() {
+            const menu = document.getElementById('index-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // Keyboard bindings
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') {
+                changeSlide(1);
+            } else if (e.key === 'ArrowLeft') {
+                changeSlide(-1);
+            }
+        });
+
+        // Quiz System
+        const quizQuestions = [
+            {
+                q: "¿Qué dos componentes son NUEVOS exclusivamente en la versión 2.0 de la Micro:bit?",
+                options: [
+                    { text: "Botón A, Botón B y Pantalla de LEDs", correct: false },
+                    { text: "Parlante/Altavoz integrado y Logo Táctil dorado", correct: true },
+                    { text: "Conector USB y sensor de Brújula", correct: false }
+                ],
+                explanation: "¡Correcto! El parlante integrado y el logo táctil dorado son novedades exclusivas de la versión 2.0."
+            },
+            {
+                q: "Si quieres programar un cuentapasos que detecte cuando el alumno camina, ¿qué sensor interno utilizas?",
+                options: [
+                    { text: "Acelerómetro", correct: true },
+                    { text: "Sensor de Temperatura", correct: false },
+                    { text: "Micrófono", correct: false }
+                ],
+                explanation: "¡Exacto! El acelerómetro mide la aceleración y los movimientos de agitación o inclinación."
+            },
+            {
+                q: "¿Cómo se transfiere el programa creado en MakeCode a la tarjeta Micro:bit física?",
+                options: [
+                    { text: "Descargando el archivo y copiándolo en la unidad Micro:bit como en un pendrive USB", correct: true },
+                    { text: "Imprimiendo el código en papel", correct: false },
+                    { text: "Enviándolo por correo electrónico", correct: false }
+                ],
+                explanation: "¡Así es! Se descarga el archivo .hex y se guarda directamente dentro de la tarjeta conectada por USB."
+            }
+        ];
+
+        let currentQuizIndex = 0;
+        let score = 0;
+
+        function loadQuizQuestion() {
+            const qData = quizQuestions[currentQuizIndex];
+            document.getElementById('quiz-progress-text').innerText = `Pregunta ${currentQuizIndex + 1} de ${quizQuestions.length}`;
+            document.getElementById('quiz-question-text').innerText = qData.q;
+            
+            const optionsContainer = document.getElementById('quiz-options-container');
+            optionsContainer.innerHTML = '';
+            
+            const feedback = document.getElementById('quiz-feedback');
+            feedback.classList.add('hidden');
+            document.getElementById('quiz-next-btn').classList.add('hidden');
+
+            qData.options.forEach((opt) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs md:text-sm text-slate-200 transition border border-slate-700/50";
+                btn.innerText = opt.text;
+                btn.onclick = () => selectQuizOption(btn, opt.correct, qData.explanation);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectQuizOption(selectedBtn, isCorrect, explanationText) {
+            const container = document.getElementById('quiz-options-container');
+            Array.from(container.children).forEach(btn => btn.disabled = true);
+
+            const feedback = document.getElementById('quiz-feedback');
+            feedback.classList.remove('hidden', 'bg-emerald-500/20', 'text-emerald-300', 'bg-rose-500/20', 'text-rose-300');
+
+            if (isCorrect) {
+                selectedBtn.classList.add('bg-emerald-600', 'text-white');
+                feedback.classList.add('bg-emerald-500/20', 'text-emerald-300');
+                feedback.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${explanationText}`;
+                score += 10;
+            } else {
+                selectedBtn.classList.add('bg-rose-600', 'text-white');
+                feedback.classList.add('bg-rose-500/20', 'text-rose-300');
+                feedback.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> <strong>Incorreto.</strong> ${explanationText}`;
+            }
+
+            document.getElementById('quiz-score').innerText = `Puntos: ${score}`;
+            document.getElementById('quiz-next-btn').classList.remove('hidden');
+        }
+
+        function nextQuizQuestion() {
+            if (currentQuizIndex < quizQuestions.length - 1) {
+                currentQuizIndex++;
+                loadQuizQuestion();
+            } else {
+                const quizBox = document.getElementById('quiz-container');
+                quizBox.innerHTML = `
+                    <div class="text-center py-6 space-y-3">
+                        <div class="w-12 h-12 bg-microbit-gold/20 text-microbit-gold rounded-full flex items-center justify-center mx-auto text-2xl">
+                            <i class="fa-solid fa-trophy"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">¡Quiz Completado!</h3>
+                        <p class="text-sm text-slate-300">Obtuviste <strong>${score} puntos</strong> de un máximo de ${quizQuestions.length * 10}.</p>
+                        <button onclick="resetQuiz()" class="bg-microbit-purple text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-indigo-600 transition">
+                            Intentar de nuevo
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function resetQuiz() {
+            currentQuizIndex = 0;
+            score = 0;
+            location.reload();
+        }
+
+        // Initialize presentation
+        updateSlideUI();
+        loadQuizQuestion();
+    </script>
+</body>
+</html>
